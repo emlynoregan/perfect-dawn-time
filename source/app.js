@@ -1,9 +1,9 @@
-﻿import { DAY, solar, dawn, at, annualJumps, validCoords, clockString, jumpString, difference } from "./astro.js";
+import { DAY, solar, dawn, at, annualJumps, validCoords, clockString, jumpString, difference } from "./astro.js";
 const $ = id => document.getElementById(id);
 const BURRA={lat:-33.682,lon:138.94,name:"Burra, South Australia"};
 const LONDON={lat:51.5074,lon:-0.1278,name:"London, United Kingdom"};
 const state={home:{...BURRA},from:{...BURRA},to:{...LONDON},live:true,chosen:Date.now()};
-const fmtCoords=p=>`${p.lat.toFixed(3)}Â°, ${p.lon.toFixed(3)}Â°`;
+const fmtCoords=p=>`${p.lat.toFixed(3)}°, ${p.lon.toFixed(3)}°`;
 const dayString=ms=>new Date(ms).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
 const hmsDuration=ms=>{const s=Math.ceil(ms/1000);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return (d?d+"d ":"")+h+"h "+String(m).padStart(2,"0")+"m";};
 const fmtDiff=mins=>{let v=Math.abs(mins);const h=Math.floor(v/60),m=Math.floor(v%60),s=Math.round((v%1)*60);return (h?h+"h ":"")+(m?m+"m ":"")+(s?s+"s":h||m?"":"0m");};
@@ -17,7 +17,7 @@ function locate(yes,no){if(!navigator.geolocation){no?.("Geolocation is not avai
 function renderHome(){if(!$("clock"))return;const p=state.home, t=Date.now(), x=at(t,p.lat,p.lon);
   $("clock").textContent=clockString(x.clock);
   $("location-name").textContent=p.name||fmtCoords(p);
-  $("clock-date").textContent="DAWN DAY Â· "+dayString(x.before.ms+4*p.lon*60000);
+  $("clock-date").textContent="DAWN DAY · "+dayString(x.before.ms+4*p.lon*60000);
   $("clock-status").textContent=x.virtual?"VIRTUAL DAWN":savedLocation()?"YOUR LOCATION":"EXAMPLE CLOCK";
   $("dawn-countdown").textContent=hmsDuration(x.untilDawn);
   $("next-jump").textContent=jumpString(x.nextJump);
@@ -27,6 +27,7 @@ function initHome(){if(!$("clock"))return;
   const saved=savedLocation();if(saved)state.home=saved;
   $("locate").addEventListener("click",()=>locate(p=>{setHome(p);$("geo-message").textContent="Using your device location. Coordinates remain in this browser."},msg=>$("geo-message").textContent=msg));
   $("edit-coords").addEventListener("click",()=>{const f=$("location-form");f.hidden=!f.hidden;$("edit-coords").setAttribute("aria-expanded",String(!f.hidden));f.latitude.value=state.home.lat;f.longitude.value=state.home.lon;});
+  $("focus-clock").addEventListener("click",()=>{const active=document.body.classList.toggle("focus-clock");$("focus-clock").textContent=active?"✕ Exit clock":"⛶ Clock only";$("focus-clock").setAttribute("aria-pressed",String(active));window.scrollTo(0,0);});
   $("location-form").addEventListener("submit",e=>{e.preventDefault();const f=e.currentTarget,lat=Number(f.latitude.value),lon=Number(f.longitude.value);if(!validCoords(lat,lon))return;$("location-form").hidden=true;$("edit-coords").setAttribute("aria-expanded","false");setHome({lat,lon,name:"Chosen coordinates"});$("geo-message").textContent="Your chosen coordinates are stored only in this browser."});
   renderHome();setInterval(renderHome,250);
   if(!saved)locate(p=>{setHome(p);$("geo-message").textContent="Location detected. Your coordinates stay in this browser."},msg=>{$("geo-message").textContent=msg+" Showing Burra as an example.";});
@@ -62,15 +63,15 @@ function initEot(){if(!$("eot-chart"))return;updateYearInput("eot-year");
  function update(){const year=Number($("eot-year").value);if(year<1800||year>2100||!Number.isInteger(year))return;const data=[];for(let date=Date.UTC(year,0,1);date<Date.UTC(year+1,0,1);date+=DAY)data.push({date:new Date(date).toISOString().slice(0,10),e:solar(date+12*3600000).equationOfTime});drawChart($("eot-chart"),data,{value:x=>x.e,date:x=>x.date,label:"eot",yLabel:n=>(n>=0?"+":"")+n.toFixed(1)+" min"});}
  $("eot-year").addEventListener("change",update);window.addEventListener("resize",update);update();
 }
-function setJumpCoords(p){$("jumps-lat").value=p.lat;$("jumps-lat-number").value=p.lat;$("jumps-lon").value=p.lon;$("jumps-location").textContent=(p.name||"CHOSEN LOCATION").toUpperCase()+" Â· "+fmtCoords(p);renderJumps();}
+function setJumpCoords(p){$("jumps-lat").value=p.lat;$("jumps-lat-number").value=p.lat;$("jumps-lon").value=p.lon;$("jumps-location").textContent=(p.name||"CHOSEN LOCATION").toUpperCase()+" · "+fmtCoords(p);renderJumps();}
 function renderJumps(){if(!$("jumps-chart"))return;const lat=Number($("jumps-lat-number").value),lon=Number($("jumps-lon").value),year=Number($("jumps-year").value);if(!validCoords(lat,lon)||!Number.isInteger(year)||year<1800||year>2100)return;
  const data=annualJumps(year,lat,lon);
- drawChart($("jumps-chart"),data,{value:x=>x.ms,date:x=>x.date,label:"jumps",yLabel:ms=>(ms>=0?"+":"âˆ’")+(Math.abs(ms)>=60000?(Math.abs(ms)/60000).toFixed(1)+" min":(Math.abs(ms)/1000).toFixed(0)+" s"),polar:true});
+ drawChart($("jumps-chart"),data,{value:x=>x.ms,date:x=>x.date,label:"jumps",yLabel:ms=>(ms>=0?"+":"−")+(Math.abs(ms)>=60000?(Math.abs(ms)/60000).toFixed(1)+" min":(Math.abs(ms)/1000).toFixed(0)+" s"),polar:true});
  const positive=data.reduce((a,b)=>b.ms>a.ms?b:a),negative=data.reduce((a,b)=>b.ms<a.ms?b:a);
  $("largest-forward").textContent=jumpString(positive.ms,true);$("forward-date").textContent=dayString(positive.dawnUTC);
  $("largest-back").textContent=jumpString(negative.ms,true);$("back-date").textContent=dayString(negative.dawnUTC);
  $("avg-jump").textContent=jumpString(data.reduce((a,b)=>a+Math.abs(b.ms),0)/data.length,true).replace("+","");
- $("polar-note").hidden=!data.some(x=>x.kind!=="sunrise");$("lat-readout").textContent=lat.toFixed(1)+"Â°";
+ $("polar-note").hidden=!data.some(x=>x.kind!=="sunrise");$("lat-readout").textContent=lat.toFixed(1)+"°";
 }
 function initJumps(){if(!$("jumps-chart"))return;updateYearInput("jumps-year");const p=savedLocation()||BURRA;setJumpCoords(p);
  $("jumps-lat").addEventListener("input",()=>{$("jumps-lat-number").value=$("jumps-lat").value;$("jumps-location").textContent="CUSTOM COORDINATES";renderJumps()});
@@ -99,9 +100,9 @@ function renderConverter(redraw=false){if(!$("from-clock"))return;const t=state.
 function renderCompareYear(){if(!$("compare-chart"))return;const year=Number($("compare-year").value);if(!Number.isInteger(year)||year<1800||year>2100)return;
  const data=[];const selected=new Date(state.live?Date.now():state.chosen);const utcWithin=state.live?12*3600000:(selected.getUTCHours()*3600+selected.getUTCMinutes()*60)*1000;
  for(let t=Date.UTC(year,0,1);t<Date.UTC(year+1,0,1);t+=DAY){data.push({date:new Date(t).toISOString().slice(0,10),diff:difference(t+utcWithin,state.from,state.to)});}
- drawChart($("compare-chart"),data,{value:x=>x.diff,date:x=>x.date,label:"compare",maxY:720,yLabel:v=>(v>=0?"+":"âˆ’")+fmtDiff(Math.abs(v))});
+ drawChart($("compare-chart"),data,{value:x=>x.diff,date:x=>x.date,label:"compare",maxY:720,yLabel:v=>(v>=0?"+":"−")+fmtDiff(Math.abs(v))});
 }
-async function searchPlace(e){e.preventDefault();const input=$("search-place"),term=input.value.trim(),el=$("search-results");if(term.length<2)return;el.textContent="Searchingâ€¦";
+async function searchPlace(e){e.preventDefault();const input=$("search-place"),term=input.value.trim(),el=$("search-results");if(term.length<2)return;el.textContent="Searching…";
  try{const url="https://nominatim.openstreetmap.org/search?format=json&limit=4&q="+encodeURIComponent(term);
  const response=await fetch(url,{headers:{"Accept":"application/json"}});if(!response.ok)throw Error("Service unavailable");const places=await response.json();el.replaceChildren();
  if(!places.length){el.textContent="No matches. Try more specific terms or pick coordinates.";return;}

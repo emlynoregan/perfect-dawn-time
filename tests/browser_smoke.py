@@ -23,6 +23,13 @@ with sync_playwright() as pw:
         overflow=page.evaluate("document.documentElement.scrollWidth - innerWidth")
         assert overflow <= 3,f"Home horizontal overflow on {name}: {overflow}"
         page.screenshot(path=str(Path(__file__).resolve().parents[1]/f"pdt-{name}-home.png"),full_page=True)
+        page.locator("#focus-clock").click()
+        assert page.locator("body.focus-clock").count() == 1
+        assert page.locator("#clock").is_visible()
+        assert page.locator(".site-header").is_hidden()
+        assert page.evaluate("document.documentElement.scrollWidth - innerWidth") <= 3
+        page.locator("#focus-clock").click()
+        assert page.locator("body.focus-clock").count() == 0
         for route,needle in [("how-it-works.html","THE DEFINING EQUATION"),("equation-of-time.html","eot-chart"),("adjustments.html","jumps-chart"),("converter.html","from-clock")]:
             page.goto(BASE+route,wait_until="domcontentloaded")
             page.wait_for_timeout(600)

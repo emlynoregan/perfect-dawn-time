@@ -3,3 +3,6 @@ site/
 .env
 scripts/.env
 *.log
+__pycache__/
+*.pyc
+pdt-*.png
