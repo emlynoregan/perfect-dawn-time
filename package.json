@@ -1,0 +1,1 @@
+{"name":"perfect-dawn-time","version":"0.1.0","private":true,"type":"module","description":"A time system where each astronomical sunrise resets the local clock to 06:00","scripts":{"build":"node scripts/build.mjs","test":"node --test tests/*.test.js","serve":"npx serve site"}}

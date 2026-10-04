@@ -1,0 +1,10 @@
+import { cp, mkdir, rm, readdir } from "node:fs/promises";
+const root=new URL("../", import.meta.url);
+const src=new URL("source/",root);
+const out=new URL("site/",root);
+await rm(out,{recursive:true,force:true});
+await mkdir(out,{recursive:true});
+await cp(src,out,{recursive:true});
+const names=await readdir(out);
+if(!names.includes("index.html")||!names.includes("astro.js"))throw Error("Incomplete build");
+console.log("PDT build: "+names.length+" static assets copied into site/");
