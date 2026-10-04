@@ -1,1 +1,11 @@
-²ø1šYì
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Perfect Dawn Time â€” sunrise</title>
+  <rect width="64" height="64" rx="15" fill="#142237"/>
+  <g stroke="#ffd28a" stroke-width="2.5" stroke-linecap="round" opacity=".92">
+    <path d="M32 8v7M11 31h6M47 31h6M16 16l5 5M48 16l-5 5"/>
+  </g>
+  <circle cx="32" cy="36" r="17" fill="#efb27b"/>
+  <path fill="#142237" d="M0 36h64v28H0z"/>
+  <path d="M10 36h44" stroke="#ffd28a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M18 43h28M23 49h18" stroke="#f8b77b" stroke-width="1.7" stroke-linecap="round" opacity=".45"/>
+</svg>

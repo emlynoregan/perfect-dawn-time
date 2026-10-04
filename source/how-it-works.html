@@ -1,4 +1,26 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f0e8"><meta name="description" content="The geometry and astronomical definition of Perfect Dawn Time."><title>How it works · Perfect Dawn Time</title><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css"></head><body data-page="math"><header class="site-header"><a href="./" class="brand"><span class="brand-sun">✺</span> PERFECT DAWN TIME <span class="brand-short">PDT</span></a><nav aria-label="Site"><a href="./">The clock</a><a class="active" href="./how-it-works.html">How it works</a><a href="./equation-of-time.html">Equation of time</a><a href="./adjustments.html">Daily jumps</a><a href="./converter.html">Converter</a></nav></header>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f0e8"><meta name="description" content="The geometry and astronomical definition of Perfect Dawn Time."><title>How it works · Perfect Dawn Time</title><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css">
+<link rel="canonical" href="https://pdt-bronzearch.house-of-ur.com/how-it-works.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Perfect Dawn Time">
+<meta property="og:locale" content="en_AU">
+<meta property="og:url" content="https://pdt-bronzearch.house-of-ur.com/how-it-works.html">
+<meta property="og:title" content="How Perfect Dawn Time works — Sunrise is always 06:00">
+<meta property="og:description" content="The geometry behind a clock that reads 06:00 at sunrise: latitude, longitude, solar declination and the equation of time.">
+<meta property="og:image" content="https://pdt-bronzearch.house-of-ur.com/social/how-it-works.png">
+<meta property="og:image:secure_url" content="https://pdt-bronzearch.house-of-ur.com/social/how-it-works.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The words &#x27;Time, from first light&#x27; beside the geometry of sunrise.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How Perfect Dawn Time works — Sunrise is always 06:00">
+<meta name="twitter:description" content="The geometry behind a clock that reads 06:00 at sunrise: latitude, longitude, solar declination and the equation of time.">
+<meta name="twitter:image" content="https://pdt-bronzearch.house-of-ur.com/social/how-it-works.png">
+<meta name="twitter:image:alt" content="The words &#x27;Time, from first light&#x27; beside the geometry of sunrise.">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+</head><body data-page="math"><header class="site-header"><a href="./" class="brand"><span class="brand-sun">✺</span> PERFECT DAWN TIME <span class="brand-short">PDT</span></a><nav aria-label="Site"><a href="./">The clock</a><a class="active" href="./how-it-works.html">How it works</a><a href="./equation-of-time.html">Equation of time</a><a href="./adjustments.html">Daily jumps</a><a href="./converter.html">Converter</a></nav></header>
 <main class="article"><div class="article-hero"><div class="wrap"><span class="eyebrow">THE PRINCIPLE / 01</span><h1>What time is <em>dawn?</em></h1><p>Six o'clock, by definition. The maths is simply the machinery needed to make that true.</p></div></div>
 <div class="article-body wrap"><aside class="article-side">The coordinate system<br><strong>φ latitude</strong><br><strong>λ longitude</strong><br><strong>δ solar declination</strong></aside><div class="prose">
 <h2>First: what are we anchoring to?</h2><p>Astronomical sunrise means the instant the Sun's upper edge would first become visible across a level, unobstructed sea-level horizon under standard atmospheric conditions. Its centre is then about 0.8333° below the geometrical horizon. No nearby hills, buildings or unusual weather are included.</p><div class="formula-block"><span class="formula-label">THE DEFINING EQUATION</span><div class="formula">PDT(t, φ, λ) = 06:00 + (t − S<sub>n</sub>)</div><p>S<sub>n</sub> is the most recent calculated sunrise at those coordinates. Take the resulting clock reading modulo 24 hours. At the next sunrise, reset to six again.</p></div>

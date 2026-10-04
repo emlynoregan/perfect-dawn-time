@@ -1,4 +1,26 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f0e8"><meta name="description" content="Interactive daily Perfect Dawn Time clock adjustments through any year at any latitude and longitude."><title>The daily jumps · Perfect Dawn Time</title><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css"></head><body data-page="jumps"><header class="site-header"><a href="./" class="brand"><span class="brand-sun">✺</span> PERFECT DAWN TIME <span class="brand-short">PDT</span></a><nav aria-label="Site"><a href="./">The clock</a><a href="./how-it-works.html">How it works</a><a href="./equation-of-time.html">Equation of time</a><a class="active" href="./adjustments.html">Daily jumps</a><a href="./converter.html">Converter</a></nav></header>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f0e8"><meta name="description" content="Interactive daily Perfect Dawn Time clock adjustments through any year at any latitude and longitude."><title>The daily jumps · Perfect Dawn Time</title><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css">
+<link rel="canonical" href="https://pdt-bronzearch.house-of-ur.com/adjustments.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Perfect Dawn Time">
+<meta property="og:locale" content="en_AU">
+<meta property="og:url" content="https://pdt-bronzearch.house-of-ur.com/adjustments.html">
+<meta property="og:title" content="Daily adjustments — One little jump every dawn">
+<meta property="og:description" content="Watch the forwards and backwards resets that keep sunrise at 06:00, and explore how they change with latitude and season.">
+<meta property="og:image" content="https://pdt-bronzearch.house-of-ur.com/social/adjustments.png">
+<meta property="og:image:secure_url" content="https://pdt-bronzearch.house-of-ur.com/social/adjustments.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The words &#x27;One little jump every dawn&#x27; beside a wave representing annual clock adjustments.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Daily adjustments — One little jump every dawn">
+<meta name="twitter:description" content="Watch the forwards and backwards resets that keep sunrise at 06:00, and explore how they change with latitude and season.">
+<meta name="twitter:image" content="https://pdt-bronzearch.house-of-ur.com/social/adjustments.png">
+<meta name="twitter:image:alt" content="The words &#x27;One little jump every dawn&#x27; beside a wave representing annual clock adjustments.">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+</head><body data-page="jumps"><header class="site-header"><a href="./" class="brand"><span class="brand-sun">✺</span> PERFECT DAWN TIME <span class="brand-short">PDT</span></a><nav aria-label="Site"><a href="./">The clock</a><a href="./how-it-works.html">How it works</a><a href="./equation-of-time.html">Equation of time</a><a class="active" href="./adjustments.html">Daily jumps</a><a href="./converter.html">Converter</a></nav></header>
 <main class="article"><div class="article-hero"><div class="wrap"><span class="eyebrow">THE ANNUAL TIDE / 03</span><h1>The clock<br><em>breathes.</em></h1><p>Every morning, one little step forwards or backwards. Change the coordinates to see exactly how big.</p></div></div>
 <section class="wrap viz-section"><div class="viz-heading"><div><span class="eyebrow" id="jumps-location">EXAMPLE · BURRA, SOUTH AUSTRALIA</span><h2>365 mornings, one curve.</h2><p>Each point is the actual reset at that day's calculated dawn: 24 hours minus the elapsed time since yesterday's dawn.</p></div><div class="select-group"><label for="jumps-year">Year</label><input id="jumps-year" type="number" min="1800" max="2100" step="1" value="2026"></div></div>
 <div class="chart-panel"><div class="chart-metrics"><div><span class="micro">SELECTED DAWN</span><strong id="jumps-point">Move over the plot</strong></div><div><span class="micro">CLOCK RESET</span><strong id="jumps-value">—</strong></div></div><canvas id="jumps-chart" class="line-chart" height="390" aria-label="Daily dawn clock jumps through the year" role="img"></canvas><div class="chart-axis-note">JAN <span>APR</span><span>JUL</span><span>OCT</span> DEC</div><p id="polar-note" class="polar-note" hidden>At this latitude, some days have no sunrise. Those dates use explicitly defined virtual dawns, shown as dashed segments.</p></div>

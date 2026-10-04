@@ -26,10 +26,16 @@ HTTPS is required for device geolocation. Visitors may also enter latitude and l
 
 The standard apparent-horizon approximation uses solar centre altitude −0.8333° (upper limb and average refraction). Solar coordinates and equation-of-time terms are approximate NOAA/Meeus equations; they are suitable for an educational demonstration, not a safety-critical or navigational time service. The coordinate system is latitude north/east longitude positive. Polar no-rise periods use the clipped hour-angle convention, explicitly labelled **virtual dawn**. Clock times can repeat/skip around resets; UTC remains authoritative for an instant. Conversion uses the shortest signed ±12h difference of clock readings, which is ambiguous at the seam; this is a clock comparison, not a globally orderable timeline.
 
+### Sharing on social platforms
+
+Each public page has its own static Open Graph and Twitter/X large-image card, canonical URL, description and accessible image description. All images are self-hosted, absolute HTTPS URLs: social crawlers do not need JavaScript, geolocation or the map provider. Five 1200 × 630 PNG share images live in `source/social/`, and the app has SVG, PNG and Apple touch icons.
+
+To regenerate the art and icons, install Pillow (`python -m pip install pillow`) and run `python scripts/generate_social_cards.py`. Commit the generated assets: the static build copies `source/` verbatim. `npm test` includes checks of the metadata, image formats, dimensions and URLs. Social services can cache older previews; after republishing, refresh their link previews or wait for their caches to expire.
+
 Resources:
 - NOAA equations: https://gml.noaa.gov/grad/solcalc/solareqns.PDF
 - USNO sunrise definitions: https://aa.usno.navy.mil/faq/RST_defs
 
 To publish, set `HOU_PROD_API_KEY` or `HOU_API_KEY` in a process environment or local `scripts/.env`. The publisher is scoped to its own House, Library folder and Site slug and does not remove old remote files. See `scripts/publish_hou_site.py --help`.
 
-**Deployment status:** build and browser smoke tested; House of Ur publication pending operator credential (set HOU_PROD_API_KEY or HOU_API_KEY for Bronze Arch House). No live site has yet been verified. Hosting target: House of Ur Sites, not GitHub Pages. Never commit credentials or build output.
+**Deployment:** publishing to House of Ur Sites is a separate step; committing or pushing this repository does not update the hosted site automatically. The configured site lives in the Bronze Arch House under `/sites/pdt/`, at `https://pdt-bronzearch.house-of-ur.com/` once deployed. Never commit credentials or build output.
