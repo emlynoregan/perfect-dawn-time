@@ -11,6 +11,35 @@ const safeGet=(key)=>{try{return JSON.parse(localStorage.getItem(key)||"null");}
 const safeSet=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{/* browsing without storage */}};
 function savedLocation(){const p=safeGet("pdt-location");return p&&validCoords(p.lat,p.lon)?p:null;}
 function setHome(p){state.home=p;safeSet("pdt-location",p);renderHome();if($("jumps-chart")){setJumpCoords(p);} }
+function localPlaceName(address){
+  if(!address||typeof address!=="object")return null;
+  const town=address.city||address.town||address.village||address.municipality||address.hamlet||address.suburb||address.city_district||address.county;
+  const region=address.state||address.region||address.province||address.country;
+  if(!town)return null;
+  return town===region?town:[town,region].filter(Boolean).join(", ");
+}
+async function resolvePlaceName(p,apply){
+  // A reverse lookup is optional: clock and manual coordinates work offline.
+  // Round to approximately 1 km, cache across page loads, and never send exact GPS coordinates.
+  const lat=Number(p.lat.toFixed(2)),lon=Number(p.lon.toFixed(2));
+  const key="pdt-place-"+lat+","+lon;
+  const cached=safeGet(key);
+  if(cached&&cached.name&&Date.now()-cached.when<30*DAY){apply(cached.name);return;}
+  try{
+    const url="https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat="+lat+"&lon="+lon;
+    const response=await fetch(url,{headers:{"Accept":"application/json"}});
+    if(!response.ok)throw Error("Reverse geocoding unavailable");
+    const result=await response.json(),name=localPlaceName(result.address);
+    if(name){safeSet(key,{name,when:Date.now()});apply(name);}
+  }catch{/* Preserve the coordinate fallback. */}
+}
+function nameSelectedHome(p){
+  setHome(p);
+  resolvePlaceName(p,name=>{
+    if(state.home.lat!==p.lat||state.home.lon!==p.lon)return;
+    setHome({...state.home,name});
+  });
+}
 function locate(yes,no){if(!navigator.geolocation){no?.("Geolocation is not available; enter your coordinates instead.");return;}
   navigator.geolocation.getCurrentPosition(({coords})=>yes({lat:coords.latitude,lon:coords.longitude,name:"Your location"}),err=>no?.("Location unavailable ("+err.message+"). You can enter coordinates instead."),{enableHighAccuracy:false,timeout:13000,maximumAge:600000});
 }
@@ -24,13 +53,13 @@ function renderHome(){if(!$("clock"))return;const p=state.home, t=Date.now(), x=
   if(x.virtual) $("geo-message").textContent="Polar convention in effect: this period has no actual sunrise. A virtual dawn is used.";
 }
 function initHome(){if(!$("clock"))return;
-  const saved=savedLocation();if(saved)state.home=saved;
-  $("locate").addEventListener("click",()=>locate(p=>{setHome(p);$("geo-message").textContent="Using your device location. Coordinates remain in this browser."},msg=>$("geo-message").textContent=msg));
+  const saved=savedLocation();if(saved){state.home=saved;if(!saved.name||saved.name==="Your location"||saved.name==="Chosen coordinates")resolvePlaceName(saved,name=>{if(state.home.lat===saved.lat&&state.home.lon===saved.lon)setHome({...state.home,name});});}
+  $("locate").addEventListener("click",()=>locate(p=>{nameSelectedHome(p);$("geo-message").textContent="Using your device location. An approximate position is sent to OpenStreetMap for a place name; precise coordinates stay in this browser."},msg=>$("geo-message").textContent=msg));
   $("edit-coords").addEventListener("click",()=>{const f=$("location-form");f.hidden=!f.hidden;$("edit-coords").setAttribute("aria-expanded",String(!f.hidden));f.latitude.value=state.home.lat;f.longitude.value=state.home.lon;});
   $("focus-clock").addEventListener("click",()=>{const active=document.body.classList.toggle("focus-clock");$("focus-clock").textContent=active?"✕ Exit clock":"⛶ Clock only";$("focus-clock").setAttribute("aria-pressed",String(active));window.scrollTo(0,0);});
-  $("location-form").addEventListener("submit",e=>{e.preventDefault();const f=e.currentTarget,lat=Number(f.latitude.value),lon=Number(f.longitude.value);if(!validCoords(lat,lon))return;$("location-form").hidden=true;$("edit-coords").setAttribute("aria-expanded","false");setHome({lat,lon,name:"Chosen coordinates"});$("geo-message").textContent="Your chosen coordinates are stored only in this browser."});
+  $("location-form").addEventListener("submit",e=>{e.preventDefault();const f=e.currentTarget,lat=Number(f.latitude.value),lon=Number(f.longitude.value);if(!validCoords(lat,lon))return;$("location-form").hidden=true;$("edit-coords").setAttribute("aria-expanded","false");nameSelectedHome({lat,lon,name:fmtCoords({lat,lon})});$("geo-message").textContent="An approximate position is sent to OpenStreetMap for a place name; your precise coordinates remain in this browser."});
   renderHome();setInterval(renderHome,250);
-  if(!saved)locate(p=>{setHome(p);$("geo-message").textContent="Location detected. Your coordinates stay in this browser."},msg=>{$("geo-message").textContent=msg+" Showing Burra as an example.";});
+  if(!saved)locate(p=>{nameSelectedHome(p);$("geo-message").textContent="Location detected. Approximate coordinates are sent to OpenStreetMap for a place name."},msg=>{$("geo-message").textContent=msg+" Showing Burra as an example.";});
 }
 function niceMax(max,steps){const n=max/steps;if(!n)return 1;const pow=10**Math.floor(Math.log10(n));const k=n/pow;return (k<=1?1:k<=2?2:k<=2.5?2.5:k<=5?5:10)*pow*steps;}
 /** Canvas chart with visible zero, selectable point, tooltip via adjacent accessible DOM. */
@@ -86,7 +115,7 @@ function syncFields(){const target=fromTarget(),p=state[target];if($("coords-for
 function syncMap(){if(!map)return;for(const type of ["from","to"]){const p=state[type];const loc=[p.lat,p.lon];if(pins[type])pins[type].setLatLng(loc);else pins[type]=window.L.circleMarker(loc,{radius:9,weight:3,color:type==="from"?"#a85f34":"#326b8c",fillColor:type==="from"?"#e8a769":"#88b6cb",fillOpacity:1}).addTo(map);pins[type].bindPopup(type==="from"?"Your place: "+p.name:"Other place: "+p.name);}}
 function setupMap(){if(!$("pick-map"))return;if(!window.L){$("pick-map").innerHTML='<div class="map-fallback">Map library unavailable. Use the named-place search or coordinate inputs.</div>';return;}
  const L=window.L;map=L.map("pick-map",{worldCopyJump:true}).setView([15,15],2);L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
- map.on("click",e=>{const lat=Number(e.latlng.lat.toFixed(5)),lon=Number((((e.latlng.lng+180)%360+360)%360-180).toFixed(5));setPlace(fromTarget(),{lat,lon,name:"Selected map point"});});syncMap();
+ map.on("click",e=>{const lat=Number(e.latlng.lat.toFixed(5)),lon=Number((((e.latlng.lng+180)%360+360)%360-180).toFixed(5));setPlace(fromTarget(),{lat,lon,name:fmtCoords({lat,lon})});const target=fromTarget();resolvePlaceName({lat,lon},name=>{if(state[target].lat===lat&&state[target].lon===lon)setPlace(target,{...state[target],name});});});syncMap();
 }
 function renderConverter(redraw=false){if(!$("from-clock"))return;const t=state.live?Date.now():state.chosen;
  const a=at(t,state.from.lat,state.from.lon),b=at(t,state.to.lat,state.to.lon);
@@ -113,8 +142,8 @@ function initConverter(){if(!$("from-clock"))return;state.from=savedLocation()||
  updateYearInput("compare-year");$("when").value="";
  document.querySelectorAll('input[name="map-target"]').forEach(el=>el.addEventListener("change",syncFields));
  $("place-search").addEventListener("submit",searchPlace);
- $("coords-form").addEventListener("submit",e=>{e.preventDefault();const lat=Number(e.currentTarget.lat.value),lon=Number(e.currentTarget.lon.value);if(!validCoords(lat,lon))return;setPlace(fromTarget(),{lat,lon,name:"Chosen coordinates"});map?.setView([lat,lon],5);});
- $("converter-geolocate").addEventListener("click",()=>locate(p=>{setPlace("from",p);document.querySelector('input[name="map-target"][value="from"]').checked=true;syncFields();map?.setView([p.lat,p.lon],7);$("converter-message").textContent="Your device location selected."},msg=>$("converter-message").textContent=msg));
+ $("coords-form").addEventListener("submit",e=>{e.preventDefault();const lat=Number(e.currentTarget.lat.value),lon=Number(e.currentTarget.lon.value);if(!validCoords(lat,lon))return;const target=fromTarget();setPlace(target,{lat,lon,name:fmtCoords({lat,lon})});resolvePlaceName({lat,lon},name=>{if(state[target].lat===lat&&state[target].lon===lon)setPlace(target,{...state[target],name});});map?.setView([lat,lon],5);});
+ $("converter-geolocate").addEventListener("click",()=>locate(p=>{setPlace("from",p);resolvePlaceName(p,name=>{if(state.from.lat===p.lat&&state.from.lon===p.lon)setPlace("from",{...state.from,name});});document.querySelector('input[name="map-target"][value="from"]').checked=true;syncFields();map?.setView([p.lat,p.lon],7);$("converter-message").textContent="Your device location selected."},msg=>$("converter-message").textContent=msg));
  document.querySelectorAll("[data-place]").forEach(b=>b.addEventListener("click",()=>{const [lat,lon,name]=b.dataset.place.split(",");setPlace(fromTarget(),{lat:Number(lat),lon:Number(lon),name});map?.setView([Number(lat),Number(lon)],5);}));
  $("when").addEventListener("change",()=>{const n=new Date($("when").value).getTime();if(Number.isFinite(n)){state.live=false;state.chosen=n;renderConverter(true);}});
  $("use-now").addEventListener("click",()=>{state.live=true;$("when").value="";renderConverter(true);});

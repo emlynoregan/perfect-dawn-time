@@ -15,11 +15,13 @@ with sync_playwright() as pw:
         assert clock[:2].isdigit(),f"Clock did not render: {clock}"
         assert page.locator("#location-name").inner_text()
         assert page.locator("#next-jump").inner_text() != "—"
+        page.route("https://nominatim.openstreetmap.org/reverse?**", lambda route: route.fulfill(status=200, content_type="application/json", body='{"address":{"town":"Mocktown","state":"Test State","country":"Australia"}}'))
         page.locator("#edit-coords").click()
         page.locator('input[name="latitude"]').fill("34")
         page.locator('input[name="longitude"]').fill("20")
         page.locator("#location-form button").click()
-        assert "Chosen" in page.locator("#location-name").inner_text()
+        page.locator("#location-name").get_by_text("Mocktown, Test State").wait_for(timeout=5000)
+        assert page.locator("#location-name").inner_text()=="Mocktown, Test State"
         overflow=page.evaluate("document.documentElement.scrollWidth - innerWidth")
         assert overflow <= 3,f"Home horizontal overflow on {name}: {overflow}"
         page.screenshot(path=str(Path(__file__).resolve().parents[1]/f"pdt-{name}-home.png"),full_page=True)
