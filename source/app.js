@@ -13,20 +13,22 @@ function savedLocation(){const p=safeGet("pdt-location");return p&&validCoords(p
 function setHome(p){state.home=p;safeSet("pdt-location",p);renderHome();if($("jumps-chart")){setJumpCoords(p);} }
 function localPlaceName(address){
   if(!address||typeof address!=="object")return null;
-  const town=address.city||address.town||address.village||address.municipality||address.hamlet||address.suburb||address.city_district||address.county;
+  const town=address.city||address.town||address.village||address.municipality||address.hamlet||address.suburb||address.city_district||address.locality||address.county;
   const region=address.state||address.region||address.province||address.country;
-  if(!town)return null;
-  return town===region?town:[town,region].filter(Boolean).join(", ");
+  if(town)return town===region?town:[town,region].filter(Boolean).join(", ");
+  // Remote locations may have no mapped settlement at all.
+  const area=address.state||address.region||address.province||address.country;
+  return area?[area,address.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(", "):null;
 }
 async function resolvePlaceName(p,apply){
   // A reverse lookup is optional: clock and manual coordinates work offline.
   // Round to approximately 1 km, cache across page loads, and never send exact GPS coordinates.
   const lat=Number(p.lat.toFixed(2)),lon=Number(p.lon.toFixed(2));
-  const key="pdt-place-"+lat+","+lon;
+  const key="pdt-place-v2-"+lat+","+lon;
   const cached=safeGet(key);
   if(cached&&cached.name&&Date.now()-cached.when<30*DAY){apply(cached.name);return;}
   try{
-    const url="https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat="+lat+"&lon="+lon;
+    const url="https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&addressdetails=1&lat="+lat+"&lon="+lon;
     const response=await fetch(url,{headers:{"Accept":"application/json"}});
     if(!response.ok)throw Error("Reverse geocoding unavailable");
     const result=await response.json(),name=localPlaceName(result.address);
@@ -41,7 +43,7 @@ function nameSelectedHome(p){
   });
 }
 function locate(yes,no){if(!navigator.geolocation){no?.("Geolocation is not available; enter your coordinates instead.");return;}
-  navigator.geolocation.getCurrentPosition(({coords})=>yes({lat:coords.latitude,lon:coords.longitude,name:"Your location"}),err=>no?.("Location unavailable ("+err.message+"). You can enter coordinates instead."),{enableHighAccuracy:false,timeout:13000,maximumAge:600000});
+  navigator.geolocation.getCurrentPosition(({coords})=>{const p={lat:coords.latitude,lon:coords.longitude};yes({...p,name:fmtCoords(p)});},err=>no?.("Location unavailable ("+err.message+"). You can enter coordinates instead."),{enableHighAccuracy:false,timeout:13000,maximumAge:600000});
 }
 function renderHome(){if(!$("clock"))return;const p=state.home, t=Date.now(), x=at(t,p.lat,p.lon);
   $("clock").textContent=clockString(x.clock);
@@ -53,7 +55,13 @@ function renderHome(){if(!$("clock"))return;const p=state.home, t=Date.now(), x=
   if(x.virtual) $("geo-message").textContent="Polar convention in effect: this period has no actual sunrise. A virtual dawn is used.";
 }
 function initHome(){if(!$("clock"))return;
-  const saved=savedLocation();if(saved){state.home=saved;if(!saved.name||saved.name==="Your location"||saved.name==="Chosen coordinates")resolvePlaceName(saved,name=>{if(state.home.lat===saved.lat&&state.home.lon===saved.lon)setHome({...state.home,name});});}
+  const saved=savedLocation();if(saved){
+    const hasNoPlaceName=!saved.name||saved.name==="Your location"||saved.name==="Chosen coordinates"||saved.name===fmtCoords(saved);
+    state.home=hasNoPlaceName?{...saved,name:fmtCoords(saved)}:saved;
+    if(hasNoPlaceName)resolvePlaceName(saved,name=>{
+      if(state.home.lat===saved.lat&&state.home.lon===saved.lon)setHome({...state.home,name});
+    });
+  }
   $("locate").addEventListener("click",()=>locate(p=>{nameSelectedHome(p);$("geo-message").textContent="Using your device location. An approximate position is sent to OpenStreetMap for a place name; precise coordinates stay in this browser."},msg=>$("geo-message").textContent=msg));
   $("edit-coords").addEventListener("click",()=>{const f=$("location-form");f.hidden=!f.hidden;$("edit-coords").setAttribute("aria-expanded",String(!f.hidden));f.latitude.value=state.home.lat;f.longitude.value=state.home.lon;});
   $("focus-clock").addEventListener("click",()=>{const active=document.body.classList.toggle("focus-clock");$("focus-clock").textContent=active?"✕ Exit clock":"⛶ Clock only";$("focus-clock").setAttribute("aria-pressed",String(active));window.scrollTo(0,0);});

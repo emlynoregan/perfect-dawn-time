@@ -50,6 +50,33 @@ with sync_playwright() as pw:
                 if name=="mobile":page.screenshot(path=str(Path(__file__).resolve().parents[1]/"pdt-mobile-converter.png"),full_page=True)
         print(name,"clock",clock,"all 5 routes and manual converter passed")
         context.close()
+    for scenario, body, expected in [
+        ("town", '{"address":{"town":"Burra","state":"South Australia","country":"Australia"}}', "Burra, South Australia"),
+        ("state only", '{"address":{"state":"South Australia","country":"Australia"}}', "South Australia, Australia"),
+        ("service unavailable", None, "-33.682°, 138.940°"),
+        ("older saved location", '{"address":{"town":"Burra","state":"South Australia","country":"Australia"}}', "Burra, South Australia"),
+    ]:
+        context=browser.new_context(
+            viewport={"width":1100,"height":800},
+            permissions=["geolocation"],
+            geolocation={"latitude":-33.682,"longitude":138.94},
+        )
+        if scenario=="older saved location":
+            context.add_init_script("localStorage.setItem('pdt-location',JSON.stringify({lat:-33.682,lon:138.94,name:'Your location'}))")
+        page=context.new_page()
+        requests=[]
+        def answer_reverse(route):
+            requests.append(route.request.url)
+            route.fulfill(status=200 if body else 503,content_type="application/json",body=body or "{}")
+        page.route("https://nominatim.openstreetmap.org/reverse?**",answer_reverse)
+        page.goto(BASE,wait_until="domcontentloaded")
+        page.locator("#location-name").get_by_text(expected,exact=True).wait_for(timeout=8000)
+        assert page.locator("#location-name").inner_text()==expected,scenario
+        assert len(requests)==1, (scenario,requests)
+        assert "zoom=14" in requests[0],requests[0]
+        assert "lat=-33.68" in requests[0] and "lon=138.94" in requests[0],requests[0]
+        print("Reverse geocoding",scenario,"=>",expected)
+        context.close()
     browser.close()
     if errors: raise AssertionError("Browser JavaScript errors: "+repr(errors))
     print("Browser page errors: 0")
