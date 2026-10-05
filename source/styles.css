@@ -26,3 +26,20 @@ body.focus-clock .hero-actions{justify-content:center;margin-top:19px}
 body.focus-clock .hero-actions>:not(#focus-clock){display:none}
 body.focus-clock #focus-clock{padding:9px 20px}
 @media(max-width:690px){body.focus-clock .clock-face{font-size:clamp(3rem,13.5vw,6rem)}body.focus-clock .clock-bottom strong{font-size:1rem}body.focus-clock .hero-inner{width:calc(100% - 20px)}body.focus-clock .clock-frame{border-color:#50647c}body.focus-clock .horizon{height:100px}}
+
+/* Two small editorial callouts: a real-world precedent and a modern daylight workaround. */
+.context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding-bottom:105px}
+.context-card{display:flex;flex-direction:column;min-width:0;border:1px solid #d9d5cb;border-radius:9px;padding:37px 38px 34px;background:#ede3d6}
+.context-card-dst{background:#e1e8e7;border-color:#d6dfde}
+.context-card .eyebrow{font-size:.67rem;letter-spacing:.15em;color:#9f6844}
+.context-card-dst .eyebrow{color:#47747d}
+.context-card h2{font-size:clamp(2rem,3.1vw,2.85rem);line-height:1.13;letter-spacing:-.035em;margin:19px 0 22px}
+.context-card h2 em{color:#aa673e}
+.context-card-dst h2 em{color:#497d88}
+.context-card p{font-size:.94rem;line-height:1.78;margin:0 0 15px;color:#485967}
+.context-card p strong{color:#203a4f}
+.context-card .context-link{display:inline-flex;align-items:center;gap:4px;align-self:start;margin-top:auto;padding-top:18px;font-size:.78rem;font-weight:700;color:#965f3c;text-underline-offset:4px}
+.context-card-dst .context-link{color:#3b6976}
+.context-card .context-link:hover{text-decoration-thickness:2px}
+@media(max-width:690px){.context-grid{grid-template-columns:1fr;gap:13px;padding-bottom:65px}.context-card{padding:27px 24px 28px}.context-card h2{font-size:clamp(2rem,9vw,2.65rem);margin:15px 0 18px}.context-card p{font-size:.9rem}}
+body.focus-clock .context-grid{display:none}

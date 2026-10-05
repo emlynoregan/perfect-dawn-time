@@ -15,6 +15,18 @@ with sync_playwright() as pw:
         assert clock[:2].isdigit(),f"Clock did not render: {clock}"
         assert page.locator("#location-name").inner_text()
         assert page.locator("#next-jump").inner_text() != "—"
+        cards=page.locator(".context-card")
+        assert cards.count()==2, "Expected Ethiopian time and daylight saving callouts"
+        assert "Ethiopia got there first." in cards.nth(0).inner_text()
+        assert "The one-hour" in cards.nth(1).inner_text()
+        assert cards.nth(0).locator('a[href*="ethiopian-time-system"]').count()==1
+        assert cards.nth(1).locator('a[href="./adjustments.html"]').count()==1
+        left=cards.nth(0).bounding_box()
+        right=cards.nth(1).bounding_box()
+        if name=="mobile":
+            assert right["y"] >= left["y"] + left["height"] - 2, "Callouts should stack on mobile"
+        else:
+            assert abs(right["y"]-left["y"])<2, "Callouts should sit side-by-side on desktop"
         page.route("https://nominatim.openstreetmap.org/reverse?**", lambda route: route.fulfill(status=200, content_type="application/json", body='{"address":{"town":"Mocktown","state":"Test State","country":"Australia"}}'))
         page.locator("#edit-coords").click()
         page.locator('input[name="latitude"]').fill("34")
@@ -29,6 +41,7 @@ with sync_playwright() as pw:
         assert page.locator("body.focus-clock").count() == 1
         assert page.locator("#clock").is_visible()
         assert page.locator(".site-header").is_hidden()
+        assert page.locator(".context-grid").is_hidden()
         assert page.evaluate("document.documentElement.scrollWidth - innerWidth") <= 3
         page.locator("#focus-clock").click()
         assert page.locator("body.focus-clock").count() == 0
